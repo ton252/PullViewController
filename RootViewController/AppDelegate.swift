@@ -33,7 +33,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 //
 //        let vc = PullViewController()
         
-        let p = MapViewController()
+        let p = UIViewController()
         let d = TableViewController()
         let vc = ViewController.init(primaryViewController: p, drawerViewController: d)
         

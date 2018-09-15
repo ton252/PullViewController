@@ -88,9 +88,6 @@ class ViewController: UIViewController {
         self.view.addSubview(self.drawerContainer)
         
         self.drawerViewController.dragableViews.forEach { $0.addGestureRecognizer(self.panGestureRecognizer) }
-        
-        (self.primaryViewController as! MapViewController).mapView.addGestureRecognizer(self.panGestureRecognizer)
-        (self.drawerViewController as! TableViewController).tableView.addGestureRecognizer(self.panGestureRecognizer)
     }
 
     override func viewDidLoad() {
@@ -131,46 +128,29 @@ class ViewController: UIViewController {
     }
     
     var previousPoint: CGPoint = .zero
+    var fraction: CGFloat = 0
     
     @objc private func handlePanGestureRecognizer(_ gestureRecognizer: UIPanGestureRecognizer) {        
         let currentPoint = gestureRecognizer.translation(in: self.view)
-        var fraction = (self.previousPoint.y - currentPoint.y) / (self.view.frame.height - self.topOffset)
+ 
         switch gestureRecognizer.state {
         case .began:
+            self.fraction = 0
             self.previousPoint = currentPoint
             
-            self.animateTransitionIfNeeded(to: currentState.opposite, duration: 0.3)
+            self.animateTransitionIfNeeded(to: currentState.opposite, duration: 0.7)
             self.runningAnimators.forEach { $0.pauseAnimation() }
             self.animationProgress = runningAnimators.map { $0.fractionComplete }
+            
         case .changed:
-            print(fraction)
-//
-//            if self.currentState == .open { fraction *= -1 }
-//            if self.runningAnimators[0].isReversed { fraction *= -1 }
-//
+            self.fraction = (self.previousPoint.y - currentPoint.y) / (self.view.frame.height - self.topOffset)
+            if self.currentState == .closed { self.fraction *= -1 }
+
             for (index, animator) in self.runningAnimators.enumerated() {
                 animator.fractionComplete = self.animationProgress[index] + fraction
             }
         case .failed, .ended, .cancelled:
-//            // variable setup
-//            let yVelocity = gestureRecognizer.velocity(in: self.view).y
-//            let shouldClose = yVelocity > 0
-//
-//            // if there is no motion, continue all animations and exit early
-//            if yVelocity == 0 {
-//                runningAnimators.forEach { $0.continueAnimation(withTimingParameters: nil, durationFactor: 0) }
-//                break
-//            }
-//
-//            // reverse the animations based on their current state and pan motion
-//            switch currentState {
-//            case .open:
-//                if !shouldClose && !runningAnimators[0].isReversed { runningAnimators.forEach { $0.isReversed = !$0.isReversed } }
-//                if shouldClose && runningAnimators[0].isReversed { runningAnimators.forEach { $0.isReversed = !$0.isReversed } }
-//            case .closed:
-//                if shouldClose && !runningAnimators[0].isReversed { runningAnimators.forEach { $0.isReversed = !$0.isReversed } }
-//                if !shouldClose && runningAnimators[0].isReversed { runningAnimators.forEach { $0.isReversed = !$0.isReversed } }
-//            }
+            runningAnimators[0].isReversed = fraction <= 0
             
             // continue all animations
             runningAnimators.forEach { $0.continueAnimation(withTimingParameters: nil, durationFactor: 0) }
@@ -203,8 +183,6 @@ class ViewController: UIViewController {
         
         transitionAnimator.startAnimation()
         self.runningAnimators.append(transitionAnimator)
-        
-        print(self.runningAnimators.count)
     }
 
 }
