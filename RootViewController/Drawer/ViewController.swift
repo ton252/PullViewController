@@ -150,7 +150,21 @@ class ViewController: UIViewController {
                 animator.fractionComplete = self.animationProgress[index] + fraction
             }
         case .failed, .ended, .cancelled:
-            runningAnimators[0].isReversed = fraction <= 0
+            var isReversed = false
+            let velocity = gestureRecognizer.velocity(in: self.view).y
+            
+            switch self.currentState {
+            case .open:
+                isReversed = fraction <= 0 || velocity > 0
+            case .closed:
+                isReversed = fraction <= 0 || velocity < 0
+            }
+            
+            runningAnimators.first?.isReversed = isReversed
+            
+//            let velocity = gestureRecognizer.velocity(in: self.view).y
+//            print("\(fraction) \(gestureRecognizer.velocity(in: self.view).y)")
+//            runningAnimators.first?.isReversed = fraction <= 0 || velocity > 0
             
             // continue all animations
             runningAnimators.forEach { $0.continueAnimation(withTimingParameters: nil, durationFactor: 0) }
@@ -167,6 +181,7 @@ class ViewController: UIViewController {
         let transitionAnimator = UIViewPropertyAnimator(duration: duration, dampingRatio: 0.75, animations: {
             self.layoutView(for: state)
         })
+
         transitionAnimator.addCompletion { position in
             switch position {
             case .start:

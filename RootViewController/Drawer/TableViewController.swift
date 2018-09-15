@@ -8,7 +8,7 @@
 
 import UIKit
 
-class TableViewController: UIViewController, UITableViewDataSource {
+class TableViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
     let tableView = UITableView()
     
     var data = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"]
@@ -20,14 +20,19 @@ class TableViewController: UIViewController, UITableViewDataSource {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.tableView.isScrollEnabled = false
+
         self.tableView.contentInsetAdjustmentBehavior = .never
         self.tableView.dataSource = self
+        self.tableView.delegate = self
     }
     
     override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
         self.tableView.frame = self.view.bounds
+    }
+    
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        scrollView.contentOffset.y = 0
     }
     
     // MARK: - Table view data source
